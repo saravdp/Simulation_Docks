@@ -33,6 +33,7 @@ unload_time = [
         [15, 3],
         [16, 2]
     ]
+
 # Preparação dos dados
 def prep_data(data):
     sum = 0
@@ -95,15 +96,13 @@ class Ship:
             # Getting hungry
             get_docks_process = self.env.process(self.get_docks())
             docks1_rq = yield get_docks_process
-
+            self.waitedTime = self.env.now - start_waiting
             # unloading time
             unloading_time = random.expovariate(1 / T1)
             yield self.env.timeout(unloading_time)
             self.interval = arrivals_time
             self.unloading = unloading_time
             self.release_docks(docks1_rq)
-
-            self.waitedTime = self.env.now - start_waiting
 
             self.waiting_times = self.env.now - arrival_time
 
@@ -136,11 +135,6 @@ def simulate(n_ships, time):
     return # sum(ship.waitedTime for ship in ships) / n_ships
 
 
-
-
-
-
-
 def main(max_ships, time, filename):
 
 
@@ -162,7 +156,7 @@ def main(max_ships, time, filename):
         size += 1
 
     print("Media de tempos de fila")
-    print(unloading / size)
+    print(queue1 / size)
     print("media descarga")
     print(unloading/size)
     print("Media de tempos de chegada")
@@ -170,6 +164,8 @@ def main(max_ships, time, filename):
     print("Media de tempos no porto")
     print(total1 / size)
     print(tabulate(shipsTable))
+
+
 if __name__ == "__main__":
 
     max_ships = 20
