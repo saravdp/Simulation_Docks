@@ -18,7 +18,7 @@ def get_value(data):
             min1 = el[0]
         elif el[0] > max1:
             max1 = el[0]
-    average = count1/freq
+    average = count1 / freq
     rand = random.randint(min1, max1)
     print("ran", rand)
 
@@ -26,32 +26,34 @@ def get_value(data):
 
 
 interarrival_frequency = [
-        [5, 1],
-        [6, 3],
-        [7, 6],
-        [8, 7],
-        [9, 9],
-        [10, 10],
-        [11, 11],
-        [12, 11],
-        [13, 11],
-        [14, 9],
-        [15, 7],
-        [16, 6],
-        [17, 5],
-        [18, 4]
-    ]
+    [5, 1],
+    [6, 3],
+    [7, 6],
+    [8, 7],
+    [9, 9],
+    [10, 10],
+    [11, 11],
+    [12, 11],
+    [13, 11],
+    [14, 9],
+    [15, 7],
+    [16, 6],
+    [17, 5],
+    [18, 4]
+]
 unload_time = [
-        [9, 20],
-        [10, 22],
-        [11, 19],
-        [12, 16],
-        [13, 10],
-        [14, 8],
-        [15, 3],
-        [16, 2]
- ]
-shipsTable=[]
+    [9, 20],
+    [10, 22],
+    [11, 19],
+    [12, 16],
+    [13, 10],
+    [14, 8],
+    [15, 3],
+    [16, 2]
+]
+shipsTable = []
+
+
 class Car:
 
     def __init__(self, env, dock, name):
@@ -61,6 +63,7 @@ class Car:
         self.unloading = get_value(unload_time)
         self.env.process(self.run_life_cicle())
         self.taken = 0
+
     def set_takenTime(self, x):
         self.takenTime = x
 
@@ -95,7 +98,8 @@ class Car:
             self.taken = self.env.now - self.get_arrived()
             self.set_takenTime(self.taken)
             print(self.taken)
-            print(" Took" , self.get_takenTime())
+            print(" Took", self.get_takenTime())
+
 
 def generate_cars(env, dock, car_inter_arrival_time):
     i = 0
@@ -112,7 +116,6 @@ def generate_cars(env, dock, car_inter_arrival_time):
 
 
 def main(dock_capacity, time, car_inter_arrival_time):
-
     env = simpy.Environment()
 
     dock = simpy.Resource(env, dock_capacity)
@@ -122,7 +125,6 @@ def main(dock_capacity, time, car_inter_arrival_time):
     env.run(until=time)
     # Calculating mean across Columns
     column_mean = np.mean(shipsTable, axis=0)
-
 
     print(tabulate(shipsTable, headers=["id", "interarrival_time", "Descarga", "Time in port"]))
     column1_mean = column_mean[1]
@@ -134,7 +136,6 @@ def main(dock_capacity, time, car_inter_arrival_time):
 
 
 if __name__ == "__main__":
-
     dock_capacity = 1
     time = 200
     car_inter_arrival_time = get_value(unload_time)

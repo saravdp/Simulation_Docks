@@ -1,11 +1,9 @@
 # import the module simpy
-import matplotlib
 import simpy
 # import the random component of numpy
 from numpy import random
 from tabulate import tabulate
 import pandas as pd
-import dataframe_image as dfi
 
 interarrival_frequency = [
         [5, 1],
@@ -33,7 +31,15 @@ unload_time = [
     [15, 3],
     [16, 2]
 ]
-
+fueling_time = [
+    [6, 4],
+    [7, 7],
+    [8, 16],
+    [9, 37],
+    [10, 22],
+    [11, 9],
+    [12, 5]
+]
 ships = []
 def get_value(data):
     value = random.random()
@@ -62,12 +68,6 @@ def exponential_distribution(mean):
     return x
 
 
-# define the triangular distribution
-def triangular_distribution(minimum, maximum, median):
-    x = random.triangular(minimum, median, maximum)
-    return x
-
-
 # define the source
 def source(env):
     i = 1
@@ -76,12 +76,12 @@ def source(env):
         t = get_value(interarrival_frequency)
         yield env.timeout(t)
         if i <= 25:
-            env.process(get_a_coffee(env, coffee_machine, i, t))
+            env.process(get_a_coffee(env, coffee_machine, fueling_station, i, t))
             i += 1
 
 
 # describe the process
-def get_a_coffee(env, coffee_machine, name, inter_arrival):
+def get_a_coffee(env, coffee_machine, fueling_station, name, inter_arrival):
     # walk to kitchen
     arrival = env.now
     # print('%ds - Person %d walking to kitchen' % (env.now, name))
@@ -105,22 +105,36 @@ def get_a_coffee(env, coffee_machine, name, inter_arrival):
     yield env.timeout(t)
     print('%ds - Ship %d finished making coffee' % (env.now, name))
 
-    # relese coffee machine for next person
+    # release coffee machine for next person
     print('%ds - Ship %d releasing coffee machine' % (env.now, name))
     coffee_machine.release(request)
+
+    arrival_station = env.now
+    request_station = fueling_station.request()
+    req_arrival_station = env.now
+    yield request_station
+    obtained_time_station = env.now
+    queue_time_station = obtained_time_station - req_arrival_station
+    # tempo abastecer
+    t_fueling = get_value(fueling_time)
+    yield env.timeout(t_fueling)
+
+
+    fueling_station.release(request_station)
     time_departure = env.now
     time_spent_in_port = time_departure- arrival
-    ships.append([name, inter_arrival, arrival, queueTime, t, time_departure, time_spent_in_port])
+    ships.append([name, inter_arrival, arrival, queueTime, t, arrival_station, queue_time_station, t_fueling, time_departure, time_spent_in_port])
 
 
 prep_data(interarrival_frequency)
 prep_data(unload_time)
-
+prep_data(fueling_time)
 # create the simpy environment
 env = simpy.Environment()
 
 # define the resources
 coffee_machine = simpy.Resource(env, capacity=1)
+fueling_station = simpy.Resource(env, capacity=1)
 
 # start the source process
 env.process(source(env))
@@ -128,7 +142,8 @@ env.process(source(env))
 # run the process
 env.run(until=10000)
 
-print(tabulate(ships, headers=["ID", "Tempo entre chegadas", "Hora de chegada", "Tempo na fila", "Tempo descarga"
+print(tabulate(ships, headers=["ID", "Tempo entre chegadas", "Hora de chegada", "Tempo na fila", "Tempo descarga",
+                               "arrival_station", "queue_time_station", "t_fueling"
                                 "Hora saída", "Tempo no Porto"]))
 
 
@@ -140,7 +155,4 @@ pdf_filepath = "novotestepdf.pdf"
 demo_df = pd.DataFrame(df, columns = ("ID", "Tempo entre chegadas", "Hora de chegada", "Tempo na fila", "Tempo descarga"
                                 "Hora saída", "Tempo no Porto"))
 
-plt = matplotlib.pyplot.table(df, columns = ("ID", "Tempo entre chegadas", "Hora de chegada", "Tempo na fila", "Tempo descarga"
-                                "Hora saída", "Tempo no Porto"))
 
-dfi.export(demo_df,"mytable.png")
