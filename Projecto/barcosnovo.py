@@ -169,3 +169,15 @@ tb1.set_fontsize(17)
 tb1.scale(1,6)
 #plt.show()
 plt.savefig('imgs/1cais.png',  bbox_inches='tight', pad_inches=0.1)
+
+fig=plt.figure(figsize=(15,10))
+X = range(2, len(ships))
+Y = [ships[n][3] for n in X]
+
+plt.plot(X, Y, "-o")
+plt.xlabel("Numero de barcos")
+plt.ylabel("Tempo de espera")
+
+plt.xticks(X)
+plt.draw()
+plt.savefig('imgs/tempovsbarcos1.png')
