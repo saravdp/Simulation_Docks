@@ -1,6 +1,8 @@
 # import the module simpy
 import simpy
 # import the random component of numpy
+from matplotlib import pyplot as plt
+from matplotlib.table import table
 from numpy import random
 from tabulate import tabulate
 import pandas as pd
@@ -147,12 +149,44 @@ print(tabulate(ships, headers=["ID", "Tempo entre chegadas", "Hora de chegada", 
                                 "Hora saída", "Tempo no Porto"]))
 
 
-
-
+average_unloading = 0
+size = 0
+average_arrival = 0
+average_queue1 = 0
+average_total1 = 0
+average_queue_station = 0
+average_time_fueling = 0
+for i in ships:
+    average_arrival += i[1]
+    average_queue1 += i[3]
+    average_total1 += i[9]
+    # descarga
+    average_unloading += i[4]
+    average_queue_station += i[6]
+    average_time_fueling += i[7]
+    size += 1
+average_arrival = average_arrival  / size
+average_queue1 = average_queue1 / size
+average_total1 = average_total1 / size
+average_unloading = average_unloading /size
+average_queue_station = average_queue_station /size
+average_time_fueling = average_time_fueling /size
+ships.append(["", average_arrival, "", average_queue1, average_unloading, "",
+              average_queue_station, average_time_fueling, "", average_total1])
 df = pd.DataFrame(ships)
 
-pdf_filepath = "novotestepdf.pdf"
-demo_df = pd.DataFrame(df, columns = ("ID", "Tempo entre chegadas", "Hora de chegada", "Tempo na fila", "Tempo descarga"
-                                "Hora saída", "Tempo no Porto"))
 
+fig=plt.figure(figsize=(15,10))
+ax=plt.subplot(111,frame_on=False)
+ax.xaxis.set_visible(False)
+ax.yaxis.set_visible(False)
 
+tb1=table(ax,df.values,colLabels = ("ID", "Tempo entre chegadas", "Hora de chegada", "Tempo na fila", "Tempo descarga",
+                               "arrival_station", "queue_time_station", "t_fueling",
+                                "Hora saída", "Tempo no Porto"),loc='center',colWidths=[0.15, 0.24, 0.2,0.2,0.25,0.22,0.22,0.22,0.22,0.22])
+
+tb1.auto_set_font_size(False)
+tb1.set_fontsize(17)
+tb1.scale(1,6)
+#plt.show()
+plt.savefig('imgs/fuel.png',  bbox_inches='tight', pad_inches=0.1)
