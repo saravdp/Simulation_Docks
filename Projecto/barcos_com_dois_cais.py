@@ -135,7 +135,7 @@ prep_data(fueling_time)
 env = simpy.Environment()
 
 # define the resources
-dock = simpy.Resource(env, capacity=1)
+dock = simpy.Resource(env, capacity=2)
 fueling_station = simpy.Resource(env, capacity=1)
 
 # start the source process
@@ -190,7 +190,7 @@ tb1.set_fontsize(17)
 tb1.scale(1,6)
 #plt.show()
 plt.draw()
-plt.savefig('imgs/fuel.png',  bbox_inches='tight', pad_inches=0.1)
+plt.savefig('imgs/2cais.png',  bbox_inches='tight', pad_inches=0.1)
 
 
 fig=plt.figure(figsize=(15,10))
@@ -203,4 +203,4 @@ plt.ylabel("Tempo de espera")
 
 plt.xticks(X)
 plt.draw()
-plt.savefig('imgs/tempovsbarcos_fuel.png')
+plt.savefig('imgs/tempovsbarcos2_cais.png')

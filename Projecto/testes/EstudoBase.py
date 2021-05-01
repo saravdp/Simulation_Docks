@@ -87,5 +87,5 @@ if __name__ == "__main__":
         [15, 3],
         [16, 2]
     ]
-    number_of_boats = 10000
+    number_of_boats = 25
     main(number_of_boats, interarrival_frequency, unload_time)

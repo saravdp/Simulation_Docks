@@ -8,6 +8,8 @@ from numpy import random
 from tabulate import tabulate
 import pandas as pd
 
+
+
 interarrival_frequency = [
         [5, 1],
         [6, 3],
@@ -79,38 +81,37 @@ def source(env):
         t = get_value(interarrival_frequency)
         yield env.timeout(t)
         if i <= 25:
-            env.process(get_a_coffee(env, coffee_machine, fueling_station, i, t))
+            env.process(get_dock(env, dock, fueling_station, i, t))
             i += 1
 
 
 # describe the process
-def get_a_coffee(env, coffee_machine, fueling_station, name, inter_arrival):
-    # walk to kitchen
+def get_dock(env, dock, fueling_station, name, inter_arrival):
+    # go to the dock
     arrival = env.now
-    # print('%ds - Person %d walking to kitchen' % (env.now, name))
     # t = get_value(unload_time)
     # yield env.timeout(t)
-    print('%ds - Ship %d arrived at kitchen' % (env.now, name))
+    print('%ds - Ship %d arrived to the port' % (env.now, name))
 
-    # request coffee machine
-    print('%ds - Ship %d requesting use of coffee machine' % (env.now, name))
-    request = coffee_machine.request()
+    # request dock
+    print('%ds - Ship %d requesting use of dock' % (env.now, name))
+    request = dock.request()
     req_time = env.now
     yield request
     obtained_time = env.now
     queueTime = obtained_time - req_time
 
-    # print('%ds - Person %d seized coffee machine' % (env.now, name))
+    # print('%ds - Person %d seized dock' % (env.now, name))
 
-    # make coffee
-    print('%ds - Ship %d making coffee' % (env.now, name))
+    # unloading
+    print('%ds - Ship %d unloading' % (env.now, name))
     t = get_value(unload_time)
     yield env.timeout(t)
-    print('%ds - Ship %d finished making coffee' % (env.now, name))
+    print('%ds - Ship %d finished unload' % (env.now, name))
 
-    # release coffee machine for next person
-    print('%ds - Ship %d releasing coffee machine' % (env.now, name))
-    coffee_machine.release(request)
+    # release dock for next ship
+    print('%ds - Ship %d releasing dock' % (env.now, name))
+    dock.release(request)
 
     print('%ds - station %d arrival ' % (env.now, name))
     arrival_station = env.now
@@ -141,10 +142,11 @@ prep_data(fueling_time)
 env = simpy.Environment()
 
 # define the resources
-coffee_machine = simpy.Resource(env, capacity=2)
+dock = simpy.Resource(env, capacity=1)
 fueling_station = simpy.Resource(env, capacity=1)
 
 # start the source process
+env.process(source(env))
 env.process(source(env))
 
 # run the process
@@ -187,7 +189,7 @@ ax.xaxis.set_visible(False)
 ax.yaxis.set_visible(False)
 
 tb1=table(ax,df.values,colLabels = ("ID", "Tempo entre chegadas", "Hora de chegada", "Tempo na fila", "Tempo descarga",
-                               "arrival_station", "queue_time_station", "t_fueling",
+                               "Hora de chegada \nà estação", "Tempo na fila \npara abastecimento", "Tempo abastecimento",
                                 "Hora saída", "Tempo no Porto"),loc='center',colWidths=[0.15, 0.24, 0.2,0.2,0.25,0.22,0.22,0.22,0.22,0.22])
 
 tb1.auto_set_font_size(False)

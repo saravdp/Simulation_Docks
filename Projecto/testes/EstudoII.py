@@ -170,7 +170,7 @@ if __name__ == "__main__":
 
     max_ships = 20
     time = 20000
-    filename = "imgs/ships_3.jpg"
+    filename = "../imgs/ships_3.jpg"
 
     main(max_ships, time,  filename)
 

@@ -1,4 +1,6 @@
 # import the module simpy
+import math
+
 import matplotlib
 import simpy
 # import the random component of numpy
@@ -10,21 +12,22 @@ from tabulate import tabulate
 import pandas as pd
 import dataframe_image as dfi
 
+random.seed(123)
 interarrival_frequency = [
         [5, 1],
         [6, 3],
         [7, 6],
         [8, 7],
-        [9, 9],
-        [10, 10],
-        [11, 11],
-        [12, 11],
-        [13, 11],
-        [14, 9],
-        [15, 7],
-        [16, 6],
-        [17, 5],
-        [18, 4]
+    [9, 9],
+    [10, 10],
+    [11, 11],
+    [12, 11],
+    [13, 11],
+    [14, 9],
+    [15, 7],
+    [16, 6],
+    [17, 5],
+    [18, 4]
     ]
 unload_time = [
     [9, 20],
@@ -36,6 +39,8 @@ unload_time = [
     [15, 3],
     [16, 2]
 ]
+
+
 
 ships = []
 def get_value(data):
@@ -59,6 +64,7 @@ def prep_data(data):
         data[i].append(data[i][2] + data[i - 1][3] if i > 0 else data[i][2])
 
 
+
 # define the exponential distribution
 def exponential_distribution(mean):
     x = random.exponential(mean)
@@ -76,44 +82,42 @@ def source(env):
     i = 1
     while True:
         # start the process
-        t = get_value(interarrival_frequency)
+        t = math.trunc(triangular_distribution(5,18,12))# get_value(interarrival_frequency)
         yield env.timeout(t)
         if i <= 25:
-            env.process(get_a_coffee(env, coffee_machine, i, t))
+            env.process(get_dock(env, dock, i, t))
             i += 1
 
 
 # describe the process
-def get_a_coffee(env, coffee_machine, name, inter_arrival):
-    # walk to kitchen
+def get_dock(env, dock, name, inter_arrival):
+    # go to the dock
     arrival = env.now
-    # print('%ds - Person %d walking to kitchen' % (env.now, name))
-    # t = get_value(unload_time)
-    # yield env.timeout(t)
-    print('%ds - Ship %d arrived at kitchen' % (env.now, name))
-
-    # request coffee machine
-    print('%ds - Ship %d requesting use of coffee machine' % (env.now, name))
-    request = coffee_machine.request()
+    print('%ds - Ship %d arrived to the dock' % (env.now, name))
+    # request dock
+    print('%ds - Ship %d requesting use of dock' % (env.now, name))
+    request = dock.request()
     req_time = env.now
+
     yield request
+
     obtained_time = env.now
-    queueTime = obtained_time - req_time
+    queue_time = obtained_time - req_time
 
-    # print('%ds - Person %d seized coffee machine' % (env.now, name))
+    # print('%ds - Person %d seized dock' % (env.now, name))
 
-    # make coffee
-    print('%ds - Ship %d making coffee' % (env.now, name))
+    # unloading
+    print('%ds - Ship %d unloading' % (env.now, name))
     t = get_value(unload_time)
     yield env.timeout(t)
-    print('%ds - Ship %d finished making coffee' % (env.now, name))
+    print('%ds - Ship %d finished unloading' % (env.now, name))
 
-    # relese coffee machine for next person
-    print('%ds - Ship %d releasing coffee machine' % (env.now, name))
-    coffee_machine.release(request)
+    # relese dock for next ship
+    print('%ds - Ship %d releasing dock' % (env.now, name))
+    dock.release(request)
     time_departure = env.now
     time_spent_in_port = time_departure- arrival
-    ships.append([name, inter_arrival, arrival, queueTime, t, time_departure, time_spent_in_port])
+    ships.append([name, inter_arrival, arrival, queue_time, t, time_departure, time_spent_in_port])
 
 
 prep_data(interarrival_frequency)
@@ -123,7 +127,7 @@ prep_data(unload_time)
 env = simpy.Environment()
 
 # define the resources
-coffee_machine = simpy.Resource(env, capacity=1)
+dock = simpy.Resource(env, capacity=1)
 
 # start the source process
 env.process(source(env))
@@ -131,8 +135,8 @@ env.process(source(env))
 # run the process
 env.run(until=10000)
 
-print(tabulate(ships, headers=["ID", "Tempo entre chegadas", "Hora de chegada", "Tempo na fila", "Tempo descarga"
-                                "Hora saída", "Tempo no Porto"]))
+# print(tabulate(ships, headers=["ID", "Tempo entre chegadas", "Hora de chegada", "Tempo na fila", "Tempo descarga"
+#                                "Hora saída", "Tempo no Porto"]))
 
 
 average_unloading = 0

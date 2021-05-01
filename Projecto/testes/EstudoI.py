@@ -93,7 +93,7 @@ def simulate(n_ships, time):
     return sum(ship.waiting for ship in ships) / n_ships
 
 
-filename = "imgs/ships_2.jpg"
+filename = "../imgs/ships_2.jpg"
 
 
 def main(max_ships, time, filename):
