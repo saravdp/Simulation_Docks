@@ -78,7 +78,7 @@ def source(env):
         # start the process
         t = get_value(interarrival_frequency)
         yield env.timeout(t)
-        if i <= 25:
+        if i <= 10000:
             env.process(get_dock(env, dock, fueling_station, i, t))
             i += 1
 
@@ -142,7 +142,7 @@ fueling_station = simpy.Resource(env, capacity=1)
 env.process(source(env))
 
 # run the process
-env.run(until=10000)
+env.run(until=300000)
 
 print(tabulate(ships, headers=["ID", "Tempo entre chegadas", "Hora de chegada", "Tempo na fila", "Tempo descarga",
                                "Hora de chegada \nà estação", "Tempo na fila \npara abastecimento", "Tempo abastecimento",
@@ -171,11 +171,21 @@ average_total1 = average_total1 / size
 average_unloading = average_unloading /size
 average_queue_station = average_queue_station /size
 average_time_fueling = average_time_fueling /size
+
+print('Tempo entre chegadas: ', average_arrival)
+print('Tempo de espera para descarregar: ', average_queue1)
+print('Tempo de descarregamento: ', average_unloading)
+print('Tempo de espera para abastecer: ', average_queue_station)
+print('Tempo de abastecimento: ', average_time_fueling)
+print('Tempo total no porto: ', average_total1)
+
 ships.append(["", average_arrival, "", average_queue1, average_unloading, "",
               average_queue_station, average_time_fueling, "", average_total1])
 df = pd.DataFrame(ships)
-
-
+df1 = pd.DataFrame(ships, columns=("ID", "Tempo entre chegadas", "Hora de chegada", "Tempo na fila", "Tempo descarga",
+                               "Hora de chegada à estação", "Tempo na fila para abastecimento", "Tempo abastecimento",
+                                "Hora saída", "Tempo no Porto"))
+df1.to_csv("doiscais.csv")
 fig=plt.figure(figsize=(15,10))
 ax=plt.subplot(111,frame_on=False)
 ax.xaxis.set_visible(False)

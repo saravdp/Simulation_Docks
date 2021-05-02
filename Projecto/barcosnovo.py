@@ -1,33 +1,29 @@
 # import the module simpy
-import math
-
-import matplotlib
 import simpy
 # import the random component of numpy
 from matplotlib import pyplot as plt
 from matplotlib.table import table
-
 from numpy import random
 from tabulate import tabulate
 import pandas as pd
-import dataframe_image as dfi
 
 random.seed(123)
+
 interarrival_frequency = [
         [5, 1],
         [6, 3],
         [7, 6],
         [8, 7],
-    [9, 9],
-    [10, 10],
-    [11, 11],
-    [12, 11],
-    [13, 11],
-    [14, 9],
-    [15, 7],
-    [16, 6],
-    [17, 5],
-    [18, 4]
+        [9, 9],
+        [10, 10],
+        [11, 11],
+        [12, 11],
+        [13, 11],
+        [14, 9],
+        [15, 7],
+        [16, 6],
+        [17, 5],
+        [18, 4]
     ]
 unload_time = [
     [9, 20],
@@ -39,9 +35,6 @@ unload_time = [
     [15, 3],
     [16, 2]
 ]
-
-
-
 ships = []
 def get_value(data):
     value = random.random()
@@ -49,7 +42,6 @@ def get_value(data):
         if a[3] > value:
             return a[0]
     return data[-1][0]
-
 
 
 # Preparação dos dados
@@ -64,16 +56,9 @@ def prep_data(data):
         data[i].append(data[i][2] + data[i - 1][3] if i > 0 else data[i][2])
 
 
-
 # define the exponential distribution
 def exponential_distribution(mean):
     x = random.exponential(mean)
-    return x
-
-
-# define the triangular distribution
-def triangular_distribution(minimum, maximum, median):
-    x = random.triangular(minimum, median, maximum)
     return x
 
 
@@ -82,9 +67,9 @@ def source(env):
     i = 1
     while True:
         # start the process
-        t = math.trunc(triangular_distribution(5,18,12))# get_value(interarrival_frequency)
+        t = get_value(interarrival_frequency)
         yield env.timeout(t)
-        if i <= 25:
+        if i <= 10000:
             env.process(get_dock(env, dock, i, t))
             i += 1
 
@@ -93,16 +78,17 @@ def source(env):
 def get_dock(env, dock, name, inter_arrival):
     # go to the dock
     arrival = env.now
-    print('%ds - Ship %d arrived to the dock' % (env.now, name))
+    # t = get_value(unload_time)
+    # yield env.timeout(t)
+    print('%ds - Ship %d arrived at port' % (env.now, name))
+
     # request dock
     print('%ds - Ship %d requesting use of dock' % (env.now, name))
     request = dock.request()
     req_time = env.now
-
     yield request
-
     obtained_time = env.now
-    queue_time = obtained_time - req_time
+    queueTime = obtained_time - req_time
 
     # print('%ds - Person %d seized dock' % (env.now, name))
 
@@ -112,17 +98,16 @@ def get_dock(env, dock, name, inter_arrival):
     yield env.timeout(t)
     print('%ds - Ship %d finished unloading' % (env.now, name))
 
-    # relese dock for next ship
+    # release dock for next ship
     print('%ds - Ship %d releasing dock' % (env.now, name))
     dock.release(request)
     time_departure = env.now
     time_spent_in_port = time_departure- arrival
-    ships.append([name, inter_arrival, arrival, queue_time, t, time_departure, time_spent_in_port])
+    ships.append([name, inter_arrival, arrival, queueTime, t, time_departure, time_spent_in_port])
 
 
 prep_data(interarrival_frequency)
 prep_data(unload_time)
-
 # create the simpy environment
 env = simpy.Environment()
 
@@ -133,7 +118,7 @@ dock = simpy.Resource(env, capacity=1)
 env.process(source(env))
 
 # run the process
-env.run(until=10000)
+env.run(until=300000)
 
 # print(tabulate(ships, headers=["ID", "Tempo entre chegadas", "Hora de chegada", "Tempo na fila", "Tempo descarga"
 #                                "Hora saída", "Tempo no Porto"]))
@@ -157,9 +142,17 @@ average_total1 = average_total1 / size
 average_unloading = average_unloading /size
 ships.append(["", average_arrival, "", average_queue1, average_unloading, "", average_total1])
 
+print('Tempo entre chegadas: ', average_arrival)
+print('Tempo de espera: ', average_queue1)
+print('Tempo de descarregamento: ', average_unloading)
+print('Tempo total no porto: ', average_total1)
+
+
 df = pd.DataFrame(ships)
 
-
+df1 = pd.DataFrame(ships, columns=("ID", "Tempo entre chegadas", "Hora de chegada", "Tempo na fila", "Tempo descarga",
+                                "Hora saída", "Tempo no Porto"))
+df1.to_csv("umcais.csv")
 fig=plt.figure(figsize=(15,10))
 ax=plt.subplot(111,frame_on=False)
 ax.xaxis.set_visible(False)
