@@ -78,7 +78,7 @@ def source(env):
         # start the process
         t = get_value(interarrival_frequency)
         yield env.timeout(t)
-        if i <= 10000:
+        if i <= 25:
             env.process(get_dock(env, dock, fueling_station, i, t))
             i += 1
 
@@ -89,26 +89,24 @@ def get_dock(env, dock, fueling_station, name, inter_arrival):
     arrival = env.now
     # t = get_value(unload_time)
     # yield env.timeout(t)
-    print('%ds - Ship %d arrived at port' % (env.now, name))
+    print('%dh - Ship %d arrived at port' % (env.now, name))
 
     # request dock
-    print('%ds - Ship %d requesting use of dock' % (env.now, name))
+    print('%dh - Ship %d requesting use of dock' % (env.now, name))
     request = dock.request()
     req_time = env.now
     yield request
     obtained_time = env.now
     queueTime = obtained_time - req_time
 
-    # print('%ds - Person %d seized dock' % (env.now, name))
-
     # unloading
-    print('%ds - Ship %d unloading' % (env.now, name))
+    print('%dh - Ship %d unloading' % (env.now, name))
     t = get_value(unload_time)
     yield env.timeout(t)
-    print('%ds - Ship %d finished unloading' % (env.now, name))
+    print('%dh - Ship %d finished unloading' % (env.now, name))
 
     # release dock for next ship
-    print('%ds - Ship %d releasing dock' % (env.now, name))
+    print('%dh - Ship %d releasing dock' % (env.now, name))
     dock.release(request)
 
     arrival_station = env.now
